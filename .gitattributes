@@ -1,1 +1,2 @@
 Secret.txt filter=git-crypt diff=git-crypt
+*.pbxproj binary merge=union

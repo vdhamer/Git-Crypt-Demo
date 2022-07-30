@@ -11,6 +11,10 @@
 		D0D2B02728952C6800DE0EBB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0D2B02628952C6800DE0EBB /* ContentView.swift */; };
 		D0D2B02928952C6900DE0EBB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D0D2B02828952C6900DE0EBB /* Assets.xcassets */; };
 		D0D2B02D28952C6900DE0EBB /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D0D2B02C28952C6900DE0EBB /* Preview Assets.xcassets */; };
+		D0D2B0392895E95C00DE0EBB /* Unsecret.txt in Resources */ = {isa = PBXBuildFile; fileRef = D0D2B0352895E95C00DE0EBB /* Unsecret.txt */; };
+		D0D2B03A2895E95C00DE0EBB /* .gitattributes in Resources */ = {isa = PBXBuildFile; fileRef = D0D2B0362895E95C00DE0EBB /* .gitattributes */; };
+		D0D2B03B2895E95C00DE0EBB /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = D0D2B0372895E95C00DE0EBB /* .gitignore */; };
+		D0D2B03C2895E95C00DE0EBB /* Secret.txt in Resources */ = {isa = PBXBuildFile; fileRef = D0D2B0382895E95C00DE0EBB /* Secret.txt */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,6 +24,10 @@
 		D0D2B02828952C6900DE0EBB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D0D2B02A28952C6900DE0EBB /* GitCryptDemo.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = GitCryptDemo.entitlements; sourceTree = "<group>"; };
 		D0D2B02C28952C6900DE0EBB /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		D0D2B0352895E95C00DE0EBB /* Unsecret.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Unsecret.txt; sourceTree = SOURCE_ROOT; };
+		D0D2B0362895E95C00DE0EBB /* .gitattributes */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitattributes; sourceTree = SOURCE_ROOT; };
+		D0D2B0372895E95C00DE0EBB /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = SOURCE_ROOT; };
+		D0D2B0382895E95C00DE0EBB /* Secret.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Secret.txt; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,6 +62,10 @@
 			children = (
 				D0D2B02428952C6800DE0EBB /* GitCryptDemoApp.swift */,
 				D0D2B02628952C6800DE0EBB /* ContentView.swift */,
+				D0D2B0362895E95C00DE0EBB /* .gitattributes */,
+				D0D2B0372895E95C00DE0EBB /* .gitignore */,
+				D0D2B0382895E95C00DE0EBB /* Secret.txt */,
+				D0D2B0352895E95C00DE0EBB /* Unsecret.txt */,
 				D0D2B02828952C6900DE0EBB /* Assets.xcassets */,
 				D0D2B02A28952C6900DE0EBB /* GitCryptDemo.entitlements */,
 				D0D2B02B28952C6900DE0EBB /* Preview Content */,
@@ -127,8 +139,12 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D0D2B03B2895E95C00DE0EBB /* .gitignore in Resources */,
+				D0D2B0392895E95C00DE0EBB /* Unsecret.txt in Resources */,
+				D0D2B03C2895E95C00DE0EBB /* Secret.txt in Resources */,
 				D0D2B02D28952C6900DE0EBB /* Preview Assets.xcassets in Resources */,
 				D0D2B02928952C6900DE0EBB /* Assets.xcassets in Resources */,
+				D0D2B03A2895E95C00DE0EBB /* .gitattributes in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
