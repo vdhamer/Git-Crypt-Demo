@@ -1,6 +1,8 @@
 .git/git-crypt/keys/**
 ../git-crypt-key
 
+About.txt
+
 #GitCryptDemo.xcodeproj/project.xcworkspace/xcuserdata/peter.xcuserdatad/UserInterfaceState.xcuserstate
 
 ###################################
