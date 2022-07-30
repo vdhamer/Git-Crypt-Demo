@@ -9,9 +9,13 @@ import SwiftUI
 
 @main
 struct GitCryptDemoApp: App {
+
+    let secretFileName = "Secret.txt"
+    let unSecretFileName = "Unsecret.txt"
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(secretFileName: secretFileName, unSecretFileName: unSecretFileName)
         }
     }
 }

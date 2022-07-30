@@ -1,14 +1,19 @@
+# git-crypt
 .git/git-crypt/keys/**
 ../git-crypt-key
 
+# Xcode
+UserInterfaceState.xcuserstate
+
+# this app
 About.txt
 
 #GitCryptDemo.xcodeproj/project.xcworkspace/xcuserdata/peter.xcuserdatad/UserInterfaceState.xcuserstate
 
 ###################################
 
-# Created by https://www.toptal.com/developers/gitignore/api/swift,xcode,macos
-# Edit at https://www.toptal.com/developers/gitignore?templates=swift,xcode,macos
+# Created by https://www.toptal.com/developers/gitignore/api/macos,swift,xcode
+# Edit at https://www.toptal.com/developers/gitignore?templates=macos,swift,xcode
 
 ### macOS ###
 # General
@@ -139,4 +144,4 @@ iOSInjectionProject/
 /*.gcno
 **/xcshareddata/WorkspaceSettings.xcsettings
 
-# End of https://www.toptal.com/developers/gitignore/api/swift,xcode,macos
+# End of https://www.toptal.com/developers/gitignore/api/macos,swift,xcode
