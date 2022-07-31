@@ -290,15 +290,64 @@ There must be a better way that solves this for all `git-crypt` projects on MacO
 	vdHamer/GitCryptDemo repository. That extends the app to use the content of either
 	`Secret.txt` or `Unsecret.txt` (when the app sees that `Secret.txt` is encrypted).
 
-	So within the app you should see "Temp secret" displayed, because that is how we left the concent of `Secret.txt` in Step #11.
+	So within the app you should see "Temp secret" displayed,
+	because that is how we left the concent of `Secret.txt` in Step (11).
+	Now you can edit it to say "Hello, secret World!", and commit the change and push it to GitHub.
+	You can do this entirely from the `Source Control` menu in Xcode: the encryption is handled automatically.
+	Essentially Xcode controls git which in turn controls `git-crypt`.
 
 17.	**Some final testing**
 
-	You may want to create a new local repository, say `GitCryptDemoClone`, of the GitHub repo.
-	The easy way to do this is to go to the GitHub repository,
+	To test what all this looks like if you don't provide the encryption Key, 
+	you might want to create a new local repository from scratch named `GitCryptDemoClone`, but with the
+	content of the `vdHamer/GitCryptDemo` GitHub repository.
+	A fast way to do this is to go to [that repository](https://github.com/vdhamer/GitCryptDemo.git),
 	and click on `Code` and `Open with Xcode`.
-	Then confirm that the file `Secret.txt` is encrypted there by opening it in an editor.
-	You should also see that the compiled app now displays "Hello, World!" with a capital W
-	(as in the file `Unsecret.txt`).
 
-	Once you are reassured that all this works, you can edit Secret.txt with an updated secret 	(but remember to lock the repo!) and you should be done.
+	Then confirm that the file `Secret.txt` is encrypted there by viewing it.
+	You should also see that an app built from this repository now displays "Hello, World!" with a capital W
+	(as in the file `Unsecret.txt`). Which confirms that the app decided that file was encrypted.
+
+### Bonus thoughs on "why does it have to be this complex?"
+
+It took 17 steps to set up everything more or less from scratch.
+With multiple tricky points - unless you knew most of this already.
+
+Admittedly, those steps included setting up a GitHub account, linking it to Xcode, installing Brew, 
+and installing `git-crypt` using Brew. Which you don't need to do for every project.
+And thus may have done already.
+
+We obviously included various steps for checking and learning. 
+These involved lots of command line commands in the Terminal window because Git tends to
+get messed up easily unless you really understand what every command will actually do.
+
+For example, to give people a mental model of the Git world, there is (kind-of officially sanctioned)
+[Visual Cheatsheet](https://ndpsoftware.com/git-cheatsheet.html#loc=index)
+which represents a Git-based environment as 5 boxes between which you copy files and send/collect information:
+
+1. **Stash** (a closet to temporarily hide changes when the going gets rough; not used above)
+2. **Workspace** (the project's directory, used above)
+3. **Index** (bookkeeping files in the .git directory, implicitly used by Git in the above)
+4. the **Local Repository** (a full source controled archive stored in the .git directory, `commits` bring data there)
+5. the **Remote Repository** (GitHub, `pushes` dump data there, but we used Xcode for any pushing to handle the required authentication/authorization)
+
+That 5-box diagram is already hard to understand, so it is animated to show all the main data flow in steps.
+And, real world Git usage has more dimensions: you can have multiple `branches` of changes before these are merged. 
+And you can have as many 'remote' repositories as you want, sometimes containing `forked` rather than `cloned`
+copies of the code.
+
+Arguably Xcode and `git-cryp` add one or more levels to the 5-box model: The Xcode `Project` concept is a lot like the
+(invisible) Git `Index` concept. Both are a registration or directory system used to find and track code and its status.
+You may thus have files in your directory/localWorkspace that the Xcode Project doesn't know or care about. And files in
+your Project that Xcode was tracking, but which somehow vanished without Xcode getting notified. In itself a classic example of an abstraction level that can by bypassed, leading to complexity.
+
+And Xcode automates some of the interaction with Git, but the Xcode Source Control commands don't cover everything
+and often individual commands map to multiple
+(configurable in Preferences) Git commands. A developer once remarked (likely on StackOverflow, I couldn't find the literal quote):
+
+>  If you want to get help with Git on the Internet, and try to explain the problem in terms of some kind of IDE or graphical shell around Git, you are likely to get zero responses by the experts. Every IDE or graphical shell
+works differently. You will simply have to explain your problem at the generic Git command-line level.
+
+Probably all this points to leaky abstractions. Git is is considered a fast, trustworthy, scalable, standard, and maybe elegant solution for a way bigger problem than most people handle: world scale distributed collaboration. But it doesn't scale elegantly *downward* to handle normal problems using single a readily explainable model.
+
+By analogy, e-mail protocols also deal with a world scale distributed system that synchronizes data across servers and e-mail clients. There too, a single user can use multiple devices to send and view e-mails, sometimes across multiple accounts. But the e-mail protocols are designed based on a much more explainable high-level functional model ("it should arrive eventually", "if your device is offline, you can read what your laptop knows about, and prepare a response that will be sent later", "you see the same inbox across your devices, regardless of what you do"). In case of Git, it seems the command line user-level commands are the highest available high level model. So you have to express what you need to do in terms of these. Instead of being able to reason about what you are actually trying to do, you have to stoop to the level of these commands and try to figure out which set in which order will do what you hope to do.
