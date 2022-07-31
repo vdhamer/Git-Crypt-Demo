@@ -286,13 +286,19 @@ There must be a better way that solves this for all `git-crypt` projects on MacO
 
 16.	**Completing the app**
 
-	You can now update the Swift files in the new app to match those in my
-	GitCryptDemo repository on GitHub. That makes the app behave differently
-	when it finds that `Secret.txt` is locked compared to when it finds the file unlocked.
+	You can now update the Swift files in the new app to match those in the GitHub
+	vdHamer/GitCryptDemo repository. That extends the app to use the content of either
+	`Secret.txt` or `Unsecret.txt` (when the app sees that `Secret.txt` is encrypted).
 
-17.	Final testing
+	So within the app you should see "Temp secret" displayed, because that is how we left the concent of `Secret.txt` in Step #11.
 
-	For the complete picture, you may want to create a new local clone of the GitHub repo.
-	And check that the `Secret` is locked: the app will show "Hello, World!" with a capital W.
+17.	**Some final testing**
+
+	You may want to create a new local repository, say `GitCryptDemoClone`, of the GitHub repo.
+	The easy way to do this is to go to the GitHub repository,
+	and click on `Code` and `Open with Xcode`.
+	Then confirm that the file `Secret.txt` is encrypted there by opening it in an editor.
+	You should also see that the compiled app now displays "Hello, World!" with a capital W
+	(as in the file `Unsecret.txt`).
 
 	Once you are reassured that all this works, you can edit Secret.txt with an updated secret 	(but remember to lock the repo!) and you should be done.
