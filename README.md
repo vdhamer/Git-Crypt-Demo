@@ -2,24 +2,40 @@
 
 ## Using `git-crypt` to encrypt files in a public Git repo
 
-This is an example of integrating [`crypt-demo`](https://github.com/AGWA/git-crypt) into an almost empty, but working, Swift/SwiftUI app under Xcode. The aim is to have a Git software repository that contains a file or two that needs encrypting. But the project should be immediately buildable/runnable — regardless of whether you have access to the encryption key. This graceful degradation is a feature of `git-crypt`. But the graceful degradation also requires the app itself to adapt if the key is not available: if you don't have access to the key, some of the app's functionality is automatically disabled or otherwise degraded.
+This is an example of integrating [`crypt-demo`](https://github.com/AGWA/git-crypt) into an almost empty, but working,
+Swift/SwiftUI app under Xcode. 
+The aim is to have a Git software repository that contains a file or two that needs encrypting.
+But the project should be immediately buildable/runnable — regardless of whether you have access to the encryption key.
+This graceful degradation is a feature of `git-crypt`.
+But the graceful degradation also requires the app itself to adapt if the key is not available:
+if you don't have access to the key, some of the app's functionality is automatically disabled or otherwise degraded.
 
 ### Requirements and assumptions
 
-The target requirements we are aiming for are listed here. We will come back to how they are achieved in a moment. The requirements/assumptions:
-1. The app needs to contain a **`Secret`** (e.g., an API key) that should stay secret. Anyone with the source code can create and insert their own `Secret`, but they cannot access the `Secret` of the original contributor.
+The target requirements we are aiming for are listed here. We will come back to how they are achieved in a moment.
+The requirements/assumptions:
+1. The app needs to contain a **`Secret`** (e.g., an API key) that should stay secret. 
+   Anyone with the source code can create and insert their own `Secret`, 
+   but they cannot access the `Secret` of the original contributor.
 2. The app's code is archived in a repository that includes an *encrypted* copy of this `Secret`.
-3. This implies that there is another secret needed to enable decryption. To avoid confusion, we will call that second secret the **`Key`**.
-4. The `Key` is *not* shared in the repository (otherwise we would be heading for an endless loop). This `Key` might be reused across a few other projects, or might be shared via a private communication with collaborators on the app project.
+3. This implies that there is another secret needed to enable decryption. 
+   To avoid confusion, we will call that second secret the **`Key`**.
+4. The `Key` is *not* shared in the repository (otherwise we would be heading for an endless loop). 
+   This `Key` might be reused across a few other projects, or might be shared via a private communication 
+   with collaborators on the app project.
 5. For anyone with access to the `Key`, the app builds and runs as-is, with **full functionality**.
-6. For anyone without access to the `Key`, the app builds and runs as-is, but with **reduced functionality**. What "reduced" looks like will vary per app.
+6. For anyone without access to the `Key`, the app builds and runs as-is, but with **reduced functionality**. 
+   What "reduced functionality" actually looks like is up to the app.
 
 ### Possible uses
 
-- A server's API provides sample weather information. But some kind of registration key gives you better information or more up to date information.
-- A server's free API provides map data, but at a limited number of requests/day. Higher request frequencies requires a license of some sort.
+- A server's API provides sample weather information. 
+  But some kind of registration key gives you better information or more up to date information.
+- A server's free API provides map data, but at a limited number of requests/day.
+  Higher request frequencies requires a license of some sort.
 - A server hosts certain documents that are only accessible if you have some secret code.
-- A WordPress website hosts a few password-protected pages. The password protection can be fetched without user help by passing a private code as a parameter in the URL.
+- A WordPress website hosts a few password-protected pages.
+  The password protection can be fetched without user help by passing a private code as a parameter in the URL.
 
 ### Notes
 
@@ -30,61 +46,106 @@ The target requirements we are aiming for are listed here. We will come back to 
 - The demo happens to mention GitHub. The principle should work with similar services like GitLabs and BitBucket.
 
 - If a user with access to the `Key` generates a binary version of the app for distribution,
-`Secret` is available unencrypted somewhere inside the app. So, if you *distribute* that version of the app, `Secret` can be extracted by anyone with enough skills and determination. So this approach assumes either *controlled* distribution of the fully functional version, or that the risks are simply acceptable. This limitation is unavoidable because the fully functional app itself by definition needs access to an unencrypted form of the `Secret`. For instance to convince an API to provide certain functionality. So even if you obfuscate `Secret` within the app, there is at least a brief moment in time where `Secret` can be seen in a debugger of by snooping network traffic.
+   `Secret` is available unencrypted somewhere inside the app.
+   So, if you *distribute* that version of the app, `Secret` can be extracted by anyone with enough
+   skills and determination. So this approach assumes either *controlled* distribution of the fully functional version,
+   or that the risks are simply acceptable. This limitation is unavoidable because the fully functional app itself
+   by definition needs access to an unencrypted form of the `Secret`.
+   For instance to convince an API to provide certain functionality. So even if you obfuscate `Secret` within the app,
+   there is at least a brief moment where `Secret` can be seen in a debugger of by snooping network traffic.
 
 - There are undoubtedly alternative approaches that can meet the listed requirements. For example
-	- GitHub has a feature to store Secrets that are accessible only to contributors via Actions. In that approach `Secret` is not an integral part of the actual source code and is not subject to version-control.
-	- Using `.gitignore` to simply keep `Secret` out of the repository does *not* meet all the requirements. In particular, you will get a compile-time error if an expected file in the bundle is missing.
+	- GitHub has a feature to store Secrets that are accessible only to contributors via Actions. 
+      In that approach `Secret` is not an integral part of the actual source code and is not subject to version-control.
+	- Using `.gitignore` to simply keep `Secret` out of the repository does *not* meet all the requirements.
+      In particular, you will get a compile-time error if an expected file in the bundle is missing.
 
 ### How each requirement is addressed
 
 > 1. the app needs to contain a `Secret`
 
-This demo app contains a pair of text files named `Unsecret.txt` and `Secret.txt`. `Unsecret` contains "Hello, World!" and is never encrypted. `Secret.txt` would contain something worth protecting (here it merely contains the string "Hello, secret World!"). The app displays "Hello, secret World!" if it can, but otherwise degrades to displaying "Hello, World!". :disappointed:
+This demo app contains a pair of text files named `Unsecret.txt` and `Secret.txt`.
+`Unsecret` contains "Hello, World!" and is never encrypted. 
+`Secret.txt` would contain something worth protecting (here it merely contains the string "Hello, secret World!").
+The app displays "Hello, secret World!" if it can, but otherwise degrades to displaying "Hello, World!". :disappointed:
 
 > 2. the app's code is in a repository that includes an **encrypted** copy of `Secret`.
 
-The encryption is handled by `git-crypt`, which is configured via an entry in `.gitattributes` that says `Secret.txt filter=git-crypt diff=git-crypt`. This causes Secret.txt to get encrypted before it reaches the remote repo. And it gets automatically decrypted when it is pulled from a remote repo.
+The encryption is handled by `git-crypt`, which is configured via an entry in `.gitattributes` that says
+`Secret.txt filter=git-crypt diff=git-crypt`. This causes Secret.txt to get encrypted before it reaches the remote repo.
+And it gets automatically decrypted when it is pulled from a remote repo.
 
 > 3. This implies that there is a second secret. Let's call that the `Key`.
 
 `git-crypt`, after initialisation in your project directory, can be asked to export the key via `$ git-crypt export-key <path>`.
 
-If you choose `$ git-crypt export-key ../git-crypt-key`, `Key` can be shared across multiple projects, or multiple variants/branches of the project. And should still have the key if you delete your local directory and reinstall by cloning from the remote repository.
+If you choose `$ git-crypt export-key ../git-crypt-key`, `Key` can be shared across multiple projects,
+or multiple variants/branches of the project.
+And should still have the key if you delete your local directory and reinstall by cloning from the remote repository.
 
 > 4. The `Key` is not shared via the repository.
 
-If your `Key` is stored *in or below* your project directory, you need to prevent uploading to the repository by listing it in the Git `.gitignore` file. If `Key` is stored in a parent directory, you might want to list it anyway, just in case.
+If your `Key` is stored *in or below* your project directory, you need to prevent uploading to the repository by
+listing it in the Git `.gitignore` file.
+If `Key` is stored in a parent directory, you might want to list it anyway, just in case.
 
 > 5. **with** access to the `Key`, the app builds and runs with **full** functionality
 
-This is a matter of detecting that the file `Secret.txt` is not encrypted in your local file system, and using this to do whatever your software needs `Secret` for. The detection can rely on the fact that a file encrypted by `git-crypt` starts with a fixed 10 byte sequence (GITCRYPT with a leading and trailing zero byte). The swift demo app simply detects this by catching if the function call `String(contentsOfFile: filepath)` throws an error.
+This is a matter of detecting that the file `Secret.txt` is not encrypted in your local file system,
+and using this to do whatever your software needs `Secret` for.
+The detection can rely on the fact that a file encrypted by `git-crypt` starts with a fixed 10 byte sequence
+(GITCRYPT with a leading and trailing zero byte).
+The Swift demo app simply detects this by catching if the function call `String(contentsOfFile: filepath)` throws an error.
 
 > 6. **without** access to `Key`, the app builds and runs with **reduced** functionality
 
-The app needs to implement this custom logic. In this case it involves using `Unsecret.txt` instead of `Secret.txt`. Again, the fact that `Secret` is encrypted is done here by catching an exception thrown while converting the text to a Swift String.
+The app needs to implement this custom logic. In this case it involves using `Unsecret.txt` instead of `Secret.txt`.
+Again, the fact that `Secret` is encrypted is done here by catching an exception thrown while converting
+the text to a Swift String.
 
 ### Running the demo
 
-To get a local copy up and running, use GitHub’s `Open with Xcode` feature, compile and run on a simulator or physical device (iPhone, iPad or Mac).
-Your local copy of the code will, by default, contain an **encrypted** version of `Secret.txt` (`cat Secret.txt` or view the file in XCode). When `Secret.txt` is encrypted, the app automatically switches tot using `Unsecret.txt` instead.
+To get a local copy up and running, use GitHub’s `Open with Xcode` feature, compile and run on a simulator or
+physical device (iPhone, iPad or Mac). Your local copy of the code will, by default, contain an **encrypted** version
+of `Secret.txt` (`cat Secret.txt` or view the file in XCode).
+When `Secret.txt` is encrypted, the app automatically switches tot using `Unsecret.txt` instead.
  
 ### Tips for integrating this into your app
 
-Setting up something similar from scratch is a bit cumbersome. Arguably because usage of both `.gitignore` and `git-crypt` are relatively error-prone. The complication lies in the fact that it is **very easy** to make a mistake, resulting in the uploading of an unencrypted version of whatever the `Secret` is. And Git makes it extremely difficult to remove all older versions of a specific file: Git just don't want you to deal with files, it deals with `commits` instead. So Git works hard to make things miserable for anyone who even thinks about (from Git's perspective) corrupting Git's archive of past commits. Another complication is that `.gitignore` needs to be set **before** you create the sensitive file. You can't set `.gitignore` and then replace a dummy version of `Secret.txt` by the real thing: if you do that, Git ignores that `.gitignore` rule and happily keeps pushing your key to the remote repo.
+Setting up something similar from scratch is a bit cumbersome.
+Arguably because usage of both `.gitignore` and `git-crypt` are relatively error-prone.
+The complication lies in the fact that it is **very easy** to make a mistake, resulting in the uploading of an
+unencrypted version of whatever the `Secret` is. And Git makes it extremely difficult to remove all older versions
+of a specific file: Git just don't want you to deal with files, it deals with `commits` instead. So Git works hard
+to make things miserable for anyone who even thinks about (from Git's perspective) corrupting Git's archive of past
+commits. Another complication is that `.gitignore` needs to be set **before** you create the sensitive file.
+You can't set `.gitignore` and then replace a dummy version of `Secret.txt` by the real thing: 
+if you do that, Git ignores that `.gitignore` rule and happily keeps pushing your key to the remote repo.
 
 So, as general advice:
 
-- Use a **dummy** secret until everything is set up. Then prove to yourself whether that `Secret` is indeed encrypted if you clone the repository without using the key. Then check that you can decrypt the dummy secret using your key. Then `lock` the repo again (you will regret it if you don't). Only insert your real `Secret` once you have proven that all this works. If you add your secret earlier while setting all this up, it is almost certain that `Secret` will end up unencrypted in your repository within some older commit, where it can be read by bots designed specifically to look for this kind of thing.
+- Use a **dummy** secret until everything is set up. 
+  Then prove to yourself whether that `Secret` is indeed encrypted if you clone the repository without using the key.
+  Then check that you can decrypt the dummy secret using your key.
+  Then `lock` the repo again (you will regret it if you don't).
+  Only insert your real `Secret` once you have proven that all this works.
+  If you add your secret earlier while setting all this up, it is almost certain that `Secret` will end up unencrypted
+  in your repository within some older commit, where it can be read by bots designed specifically for this kind of task.
 - Use the Git command line a lot. Its use can coexist with using the GUI for source management in Xcode:
 	- Use `git status` (on the command line). Use it a lot to detect general Git issues.
-	- Use `git-crypt status` (on the command line) even more when making changes to encryption setting or encrypted content. It can actually warn you about leaking unencrypted versions of the file you intended to only push in encrypted form.
+	- Use `git-crypt status` (on the command line) even more when making changes to encryption setting or 
+      encrypted content. It can actually warn you about leaking unencrypted versions of the file you intended to 
+      only push in encrypted form.
 
 ### Stepwise instructions
 
-Normally having access to working source code should be enough to get you going. Unfortunately, this setup process involves some initialisation via the command line and some files that are typically done outside the source code.
+Normally having access to working source code should be enough to get you going.
+Unfortunately, this setup process involves some initialisation via the command line and some files that are often
+done outside the source code.
 
-So setting up your own project (in XCode) that uses `git-crypt` can be done as follows. Remember that the order of the steps is critical in some places (otherwise you end up with an unencrypted copy of `Secret.txt` in the repository or end up publishing your encryption key!):
+So setting up your own project (in XCode) that uses `git-crypt` can be done as follows.
+Remember that the order of the steps is critical in some places (otherwise you end up with an unencrypted copy of
+`Secret.txt` in the repository or end up publishing your encryption key!):
 
 1.	Create an **new project** in XCode. 
 
@@ -95,7 +156,8 @@ So setting up your own project (in XCode) that uses `git-crypt` can be done as f
 
 	In about 10 steps, you will need to have an account at GitHub (or a similar service).
 	This requires the setup of your authentication with GitHub, and linking Xcode that that GitHub account.
-	This can be found in Apple's [source control documentation](https://developer.apple.com/documentation/xcode/configuring-your-xcode-project-to-use-source-control).
+	This can be found in Apple's
+    [source control documentation](https://developer.apple.com/documentation/xcode/configuring-your-xcode-project-to-use-source-control).
 
 2.	At this point, your source files are **not version managed** yet.
 
@@ -115,7 +177,8 @@ So setting up your own project (in XCode) that uses `git-crypt` can be done as f
 	run `git add .` (the period is intentional) to put the current contents of the project directory
 	and its subdirectories under source control.
 	Run `git status` again to see what files are now being monitored.
-	These files are being watched, but haven't been stored in the local git repository get (they haven't been "committed"). We will commit these files and more later.
+	These files are being watched, but haven't been stored in the local git repository get
+    (they haven't been "committed"). We will commit these files and more later.
 
 4.  Install the **Homebrew** package manager
 
@@ -168,8 +231,7 @@ So setting up your own project (in XCode) that uses `git-crypt` can be done as f
 	where Git is trying to track Xcode files that save the state of the Xcode user
 	interface.
 	Which in turn prevents Git from thinking something needs saving, while you were
-	sure that you didn't modify anything: you didn't change the code, but Xcode did
-	change a file like .
+	sure that you didn't modify anything: you didn't change the code, but Xcode update a state file somewhere.
 
 8.	**Enable `git-crypt`**
 
@@ -208,7 +270,8 @@ So setting up your own project (in XCode) that uses `git-crypt` can be done as f
       textconv = \"/opt/homebrew/bin/git-crypt\" diff
    ~~~
 
-There must be a better way that solves this for all `git-crypt` projects on MacOS, but this will fix the problem for one individual project.
+There must be a better way that solves this for all `git-crypt` projects on MacOS,
+but this will fix the problem for one individual project.
 
 11.	Create **Secret.txt** and **Unsecret.txt**
 
@@ -268,7 +331,8 @@ There must be a better way that solves this for all `git-crypt` projects on MacO
 	It displays "Hello, world!" with a lower-case "w".
 	That text is neither of the 2 text files, because we are not using them yet.
 
-	At this point, we have actually encrypted something (going by `git-crypt status` and the fact that we have done a commit. But it is not really convincing yet.
+	At this point, we have actually encrypted something (going by `git-crypt status` and
+    the fact that we have done a commit. But it is not really convincing yet.
 
 15.	**Pushing the commit to GitHub**
 
@@ -329,7 +393,8 @@ which represents a Git-based environment as 5 boxes between which you copy files
 2. **Workspace** (the project's directory, used above)
 3. **Index** (bookkeeping files in the .git directory, implicitly used by Git in the above)
 4. the **Local Repository** (a full source controled archive stored in the .git directory, `commits` bring data there)
-5. the **Remote Repository** (GitHub, `pushes` dump data there, but we used Xcode for any pushing to handle the required authentication/authorization)
+5. the **Remote Repository** (GitHub, `pushes` dump data there, but we used Xcode for any `pushing`
+   to handle the required authentication/authorization)
 
 That 5-box diagram is already hard to understand, so it is animated to show all the main data flow in steps.
 And, real world Git usage has more dimensions: you can have multiple `branches` of changes before these are merged. 
@@ -339,15 +404,29 @@ copies of the code.
 Arguably Xcode and `git-cryp` add one or more levels to the 5-box model: The Xcode `Project` concept is a lot like the
 (invisible) Git `Index` concept. Both are a registration or directory system used to find and track code and its status.
 You may thus have files in your directory/localWorkspace that the Xcode Project doesn't know or care about. And files in
-your Project that Xcode was tracking, but which somehow vanished without Xcode getting notified. In itself a classic example of an abstraction level that can by bypassed, leading to complexity.
+your Project that Xcode was tracking, but which somehow vanished without Xcode getting notified.
+In itself a classic example of an abstraction level that can by bypassed, leading to complexity.
 
 And Xcode automates some of the interaction with Git, but the Xcode Source Control commands don't cover everything
-and often individual commands map to multiple
-(configurable in Preferences) Git commands. A developer once remarked (likely on StackOverflow, I couldn't find the literal quote):
+and often individual commands map to multiple (configurable in Preferences) Git commands.
+A developer once remarked (likely on StackOverflow, I couldn't find the literal quote):
 
->  If you want to get help with Git on the Internet, and try to explain the problem in terms of some kind of IDE or graphical shell around Git, you are likely to get zero responses by the experts. Every IDE or graphical shell
-works differently. You will simply have to explain your problem at the generic Git command-line level.
+>  If you want to get help with Git on the Internet, and try to explain your problem in terms of some kind of IDE
+   or graphical shell around Git, you are likely to get no responses from the experts. Every IDE or graphical shell
+   works differently. You will simply have to explain your problem at the generic Git command-line level.
 
-Probably all this points to leaky abstractions. Git is is considered a fast, trustworthy, scalable, standard, and maybe elegant solution for a way bigger problem than most people handle: world scale distributed collaboration. But it doesn't scale elegantly *downward* to handle normal problems using single a readily explainable model.
+Probably all this points to leaky abstractions. Git is considered a fast, trustworthy, scalable, standard, 
+and possibly elegant solution for a way bigger problem than most people handle:
+world scale distributed collaboration. But it doesn't scale elegantly *downward*
+to handle normal problems using single a readily explainable model.
 
-By analogy, e-mail protocols also deal with a world scale distributed system that synchronizes data across servers and e-mail clients. There too, a single user can use multiple devices to send and view e-mails, sometimes across multiple accounts. But the e-mail protocols are designed based on a much more explainable high-level functional model ("it should arrive eventually", "if your device is offline, you can read what your laptop knows about, and prepare a response that will be sent later", "you see the same inbox across your devices, regardless of what you do"). In case of Git, it seems the command line user-level commands are the highest available high level model. So you have to express what you need to do in terms of these. Instead of being able to reason about what you are actually trying to do, you have to stoop to the level of these commands and try to figure out which set in which order will do what you hope to do.
+By analogy, e-mail protocols also deal with a world scale distributed system that synchronises data
+across servers and e-mail clients. There too, a single user can use multiple devices to send and view
+e-mails, sometimes across multiple accounts. But the e-mail protocols are designed based on a much more
+explainable high-level functional model ("it should arrive eventually", "if your device is offline, you
+can read what your laptop knows about, and prepare a response that will be sent later", "you see the same
+inbox across your devices, regardless of what you do"). In case of Git, it seems the command line
+user-level commands are the highest available high level model. So you have to express what you need to
+do in terms of these. Instead of being able to reason about what you are actually trying to do, you have
+to stoop to the level of these commands and try to figure out which set in which order will do what you
+hope to do.
