@@ -4,25 +4,29 @@
 
 This is an example of integrating [`crypt-demo`](https://github.com/AGWA/git-crypt) into an almost empty, but working,
 Swift/SwiftUI app under Xcode. 
-The aim is to have a Git software repository that contains a file or two that needs encrypting.
-But the project should be immediately buildable/runnable — regardless of whether you have access to the encryption key.
-This graceful degradation is a feature of `git-crypt`.
-But the graceful degradation also requires the app itself to adapt if the key is not available:
-if you don't have access to the key, some of the app's functionality is automatically disabled or otherwise degraded.
+The aim is to have a Git software repository that contains a tiny file that needs encrypting.
+Furthermore the project should be immediately buildable/runnable —
+regardless of whether you have the required encryption key.
+
+This "graceful degradation" is a feature of `git-crypt`: you can make an app that builds correctly in both states.
+But this graceful degration also requires that the app's code does its part at runtime:
+if you don't have access to the key, some of the app's functionality needs to be automatically disabled or 
+degraded in an appropriate way. After all, *with* the key, the app runs as intended. 
+But *without* the key something it would normally need is simply missing, and the app needs to adapt for this.
 
 ### Requirements and assumptions
 
-The target requirements we are aiming for are listed here. We will come back to how they are achieved in a moment.
+The target requirements we are aiming for are listed here. We will come back to how each is achieved in a moment.
 The requirements/assumptions:
 1. The app needs to contain a **`Secret`** (e.g., an API key) that should stay secret. 
    Anyone with the source code can create and insert their own `Secret`, 
    but they cannot access the `Secret` of the original contributor.
 2. The app's code is archived in a repository that includes an *encrypted* copy of this `Secret`.
-3. This implies that there is another secret needed to enable decryption. 
+3. This implies that there is *another* secret needed to enable decryption. 
    To avoid confusion, we will call that second secret the **`Key`**.
-4. The `Key` is *not* shared in the repository (otherwise we would be heading for an endless loop). 
+4. The `Key` is *not* shared in the repository (otherwise we would be heading even more secrets). 
    This `Key` might be reused across a few other projects, or might be shared via a private communication 
-   with collaborators on the app project.
+   with collaborators on this app project.
 5. For anyone with access to the `Key`, the app builds and runs as-is, with **full functionality**.
 6. For anyone without access to the `Key`, the app builds and runs as-is, but with **reduced functionality**. 
    What "reduced functionality" actually looks like is up to the app.
@@ -30,37 +34,40 @@ The requirements/assumptions:
 ### Possible uses
 
 - A server's API provides sample weather information. 
-  But some kind of registration key gives you better information or more up to date information.
-- A server's free API provides map data, but at a limited number of requests/day.
-  Higher request frequencies requires a license of some sort.
-- A server hosts certain documents that are only accessible if you have some secret code.
+  But some kind of registration key gives you better information or more recent information.
+- A server's free API provides map data, but at a limited request frequency.
+  A personal license of some sort gives you access to a higher request frequency.
+- A server hosts certain documents that are only accessible if you have some passcode.
 - A WordPress website hosts a few password-protected pages.
-  The password protection can be fetched without user help by passing a private code as a parameter in the URL.
+  The password protection can be fetched without user help by passing a secret code (which may differ from the password)
+  as a parameter at the end of the URL.
 
 ### Notes
 
-- Protecting the `Secret` is essential if your repository is public. But it also can act as a safety net when the repository is private.
+- Protecting the `Secret` is essential if your repository is public. But it also can act as a safety net
+  when the repository is private.
  
-- The demo happens to use Swift/SwiftUI/XCode. The principle can be applied to other languages.
+- The demo happens to use Swift/SwiftUI/XCode. The approach can be applied to other languages.
 
-- The demo happens to mention GitHub. The principle should work with similar services like GitLabs and BitBucket.
+- The demo happens to mention GitHub. The principle with work with other Git providers like GitLabs and BitBucket.
 
 - If a user with access to the `Key` generates a binary version of the app for distribution,
-   `Secret` is available unencrypted somewhere inside the app.
-   So, if you *distribute* that version of the app, `Secret` can be extracted by anyone with enough
-   skills and determination. So this approach assumes either *controlled* distribution of the fully functional version,
-   or that the risks are simply acceptable. This limitation is unavoidable because the fully functional app itself
-   by definition needs access to an unencrypted form of the `Secret`.
-   For instance to convince an API to provide certain functionality. So even if you obfuscate `Secret` within the app,
-   there is at least a brief moment where `Secret` can be seen in a debugger of by snooping network traffic.
+  `Secret` is available somewhere in unencrypted form within the app.
+  So, if you *distribute* that app, `Secret` can be extracted by anyone with enough skills and determination.
+  So this approach assumes either *controlled* distribution of the fully functional version, obfuscation of the code,
+  or that the risk is acceptable. This limitation is unavoidable because the fully functional app itself
+  by definition needs access to an unencrypted form of the `Secret`. Example:
+  to get an API to provide certain functionality. So even if you obfuscate `Secret` within the app,
+  there is at least a moment where `Secret` can be accessed in a debugger or, simpler, by snooping network traffic.
 
 - There are undoubtedly alternative approaches that can meet the listed requirements. For example
 	- GitHub has a feature to store Secrets that are accessible only to contributors via Actions. 
-      In that approach `Secret` is not an integral part of the actual source code and is not subject to version-control.
-	- Using `.gitignore` to simply keep `Secret` out of the repository does *not* meet all the requirements.
-      In particular, you will get a compile-time error if an expected file in the bundle is missing.
+      In that approach `Secret` is *not* an integral part of the source code, but is also not subject to version-control.
+	- You might consider using `.gitignore` to simply keep `Secret` out of the repository.
+	  But this does *not* meet all the requirements.
+      In particular, you will get a compile-time error if an expected file is missing during the build.
 
-### How each requirement is addressed
+### How the 6 requirements are addressed
 
 > 1. the app needs to contain a `Secret`
 
@@ -372,14 +379,14 @@ but this will fix the problem for one individual project.
 	You should also see that an app built from this repository now displays "Hello, World!" with a capital W
 	(as in the file `Unsecret.txt`). Which confirms that the app decided that file was encrypted.
 
-### Bonus thoughs on "why does it have to be this complex?"
+### Thoughs on "should it really be this complex?"
 
 It took 17 steps to set up everything more or less from scratch.
 With multiple tricky points - unless you knew most of this already.
 
 Admittedly, those steps included setting up a GitHub account, linking it to Xcode, installing Brew, 
 and installing `git-crypt` using Brew. Which you don't need to do for every project.
-And thus may have done already.
+And thus may have done years ago.
 
 We obviously included various steps for checking and learning. 
 These involved lots of command line commands in the Terminal window because Git tends to
