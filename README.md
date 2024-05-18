@@ -114,39 +114,42 @@ the file content to a Swift String.
 
 To get a local copy up and running, use GitHub’s `Open with Xcode` feature, compile and run on a simulator or
 physical device (iPhone, iPad or Mac). Your local copy of the code will, by default, contain an **encrypted** version
-of `Secret.txt` (`cat Secret.txt` or view the file in XCode).
-When `Secret.txt` is encrypted, the app automatically switches tot using `Unsecret.txt` instead.
+of `Secret.txt`. And the app bundle (presuming that `Secret.txt` is in your target) contain this `Secret.text` file.
+When `Secret.txt` is encrypted, the app automatically uses `Unsecret.txt` instead.
  
 ### Tips for integrating this into your app
 
 Setting up something similar from scratch is a bit cumbersome.
+
 Arguably because usage of both `.gitignore` and `git-crypt` are relatively error-prone.
 The complication lies in the fact that it is **very easy** to make a mistake, resulting in the uploading of an
-unencrypted version of whatever the `Secret` is. And Git makes it extremely difficult to remove all older versions
+unencrypted version of `Secret.txt`. And Git makes it extremely difficult to remove all older versions
 of a specific file: Git just don't want you to deal with files, it deals with `commits` instead. So Git works hard
 to make things miserable for anyone who even thinks about (from Git's perspective) corrupting Git's archive of past
-commits. Another complication is that `.gitignore` needs to be set **before** you create the sensitive file.
+commits.
+
+Another complication is that `.gitignore` needs to be set **before** you create the sensitive file.
 You can't set `.gitignore` and then replace a dummy version of `Secret.txt` by the real thing: 
 if you do that, Git ignores that `.gitignore` rule and happily keeps pushing your key to the remote repo.
 
 So, as general advice:
 
 - Use a **dummy** secret until everything is set up. 
-  Then prove to yourself whether that `Secret` is indeed encrypted if you clone the repository without using the key.
-  Then check that you can decrypt the dummy secret using your key.
+  Then prove to yourself whether that `Secret.txt` is indeed encrypted if you clone the repository without using the key.
+  Then, after enabling encryption, check that you can decrypt the dummy secret using your key.
   Then `lock` the repo again (you will regret it if you don't).
-  Only insert your real `Secret` once you have proven that all this works.
+  Only insert your real `Secret` into the `Secret.txt` file once you have proven that all this works.
   If you add your secret earlier while setting all this up, it is almost certain that `Secret` will end up unencrypted
-  in your repository within some older commit, where it can be read by bots designed specifically for this kind of task.
+  in your GitHub repository within some older commit, where it can be read by bots designed specifically for this kind of task.
 - Use the Git command line a lot. Its use can coexist with using the GUI for source management in Xcode:
 	- Use `git status` (on the command line). Use it a lot to detect general Git issues.
 	- Use `git-crypt status` (on the command line) even more when making changes to encryption setting or 
       encrypted content. It can actually warn you about leaking unencrypted versions of the file you intended to 
-      only push in encrypted form.
+      only publish in encrypted form.
 
 ### Stepwise instructions
 
-Normally having access to working source code should be enough to get you going.
+Normally having access to working source code should be enough to get you going, right?
 Unfortunately, this setup process involves some initialisation via the command line and some files that are often
 done outside the source code.
 
@@ -162,7 +165,7 @@ Remember that the order of the steps is critical in some places (otherwise you e
 	But let's do that manually in a moment, so let's uncheck the checkbox.
 
 	In about 10 steps, you will need to have an account at GitHub (or a similar service).
-	This requires the setup of your authentication with GitHub, and linking Xcode that that GitHub account.
+	This requires the setup of your authentication with GitHub, and linking Xcode to that GitHub account.
 	This can be found in Apple's
     [source control documentation](https://developer.apple.com/documentation/xcode/configuring-your-xcode-project-to-use-source-control).
 
@@ -181,7 +184,7 @@ Remember that the order of the steps is critical in some places (otherwise you e
 	Run 'git status` again to confirm that it worked.
 
 	Actually we need to do a bit more to reach the same point as the checkbox in XCode that we skipped: 
-	run `git add .` (the period is intentional) to put the current contents of the project directory
+	run `git add .` (including the period) to put the current contents of the project directory
 	and its subdirectories under source control.
 	Run `git status` again to see what files are now being monitored.
 	These files are being watched, but haven't been stored in the local git repository get
