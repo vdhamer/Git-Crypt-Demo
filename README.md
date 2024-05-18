@@ -12,35 +12,36 @@ This "graceful degradation" is a feature of `git-crypt`: you can make an app tha
 But this graceful degration also requires that the app's code does its part at runtime:
 if you don't have access to the key, some of the app's functionality needs to be automatically disabled or 
 degraded in an appropriate way. After all, *with* the key, the app runs as intended. 
-But *without* the key something it would normally need is simply missing, and the app needs to adapt for this.
+But *without* the key something that it would normally need is simply missing, and the app needs to deal with this.
 
 ### Requirements and assumptions
 
 The target requirements we are aiming for are listed here. We will come back to how each is achieved in a moment.
 The requirements/assumptions:
 1. The app needs to contain a **`Secret`** (e.g., an API key) that should stay secret. 
-   Anyone with the source code can create and insert their own `Secret`, 
-   but they cannot access the `Secret` of the original contributor.
-2. The app's code is archived in a repository that includes an *encrypted* copy of this `Secret`.
+   Anyone with the source code can create and insert their _own_ `Secret`, 
+   but they cannot access the `Secret` owned by the original code author.
+2. The app's code is archived in a repository that contains an *encrypted* copy of the file with the `Secret`.
 3. This implies that there is *another* secret needed to enable decryption. 
    To avoid confusion, we will call that second secret the **`Key`**.
-4. The `Key` is *not* shared in the repository (otherwise we would be heading even more secrets). 
+4. The `Key` is *not* shared in the repository (otherwise we would be heading towards even more secrets). 
    This `Key` might be reused across a few other projects, or might be shared via a private communication 
    with collaborators on this app project.
-5. For anyone with access to the `Key`, the app builds and runs as-is, with **full functionality**.
+5. For anyone with access to the `Key`, the app builds and runs as-is, with **full functionality** because access to the `Key` gives access to the `Secret`. 
 6. For anyone without access to the `Key`, the app builds and runs as-is, but with **reduced functionality**. 
-   What "reduced functionality" actually looks like is up to the app.
+   What "reduced functionality" could looks like is entirely up to the app.
 
-### Possible uses
+### Possible use cases
 
 - A server's API provides sample weather information. 
-  But some kind of registration key gives you better information or more recent information.
+  But some kind of registration key gives the app more accurate or more recent information.
 - A server's free API provides map data, but at a limited request frequency.
   A personal license of some sort gives you access to a higher request frequency.
-- A server hosts certain documents that are only accessible if you have some passcode.
-- A WordPress website hosts a few password-protected pages.
+- A server hosts certain data files that are only accessible if you have some passcode.
+  With the passcode, the app gets some extra functionality.
+- A WordPress website hosts a password-protected page.
   The password protection can be fetched without user help by passing a secret code (which may differ from the password)
-  as a parameter at the end of the URL.
+  as a parameter at the end of the URL. There is a plug-in for this: _Post Password Token_.
 
 ### Notes
 
@@ -49,11 +50,11 @@ The requirements/assumptions:
  
 - The demo happens to use Swift/SwiftUI/XCode. The approach can be applied to other languages.
 
-- The demo happens to mention GitHub. The principle with work with other Git providers like GitLabs and BitBucket.
+- The demo happens to mention GitHub. The principle should work with other Git providers like GitLabs and BitBucket.
 
 - If a user with access to the `Key` generates a binary version of the app for distribution,
-  `Secret` is available somewhere in unencrypted form within the app.
-  So, if you *distribute* that app, `Secret` can be extracted by anyone with enough skills and determination.
+  `Secret` is available somewhere in unencrypted form within the app bundle.
+  So, if you *distribute* that app, `Secret` can be extracted by someone with enough skills and determination.
   So this approach assumes either *controlled* distribution of the fully functional version, obfuscation of the code,
   or that the risk is acceptable. This limitation is unavoidable because the fully functional app itself
   by definition needs access to an unencrypted form of the `Secret`. Example:
