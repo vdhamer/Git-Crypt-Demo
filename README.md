@@ -266,7 +266,7 @@ Remember that the order of the steps is critical in some places (otherwise you e
 	`echo $PATH` to check that your path contains /opt/homebrew/bin. 
 	This is relevant because homebrew changed this path with the introduction of the new M-series.
 
-	Because I still had problems here, I recommend that, you edit the (existing) `./sub.git/config` file to contain 
+	Because I still had problems here, I recommend that, you edit the (existing) `.git/config` file to contain 
 	absolute path names (I suspect that `filter` and `diff` somehow bypass the path):
    ~~~
    [filter "git-crypt"]
