@@ -46,9 +46,9 @@ The requirements/assumptions:
 ### Notes
 
 - Protecting the `Secret` is essential if your repository is public. But it also can act as a safety net
-  when the repository is private.
+  when the repository is private: if somebody gets access to the private repo, `Secret` is still safe.
  
-- The demo happens to use Swift/SwiftUI/XCode. The approach can be applied to other languages.
+- The demo happens to use Swift, SwiftUI, and Xcode. The approach can be applied to other languages.
 
 - The demo happens to mention GitHub. The principle should work with other Git providers like GitLabs and BitBucket.
 
@@ -61,35 +61,34 @@ The requirements/assumptions:
   to get an API to provide certain functionality. So even if you obfuscate `Secret` within the app,
   there is at least a moment where `Secret` can be accessed in a debugger or, simpler, by snooping network traffic.
 
-- There are undoubtedly alternative approaches that can meet the listed requirements. For example
+- There are undoubtedly alternative approaches that can meet these requirements. For example
 	- GitHub has a feature to store Secrets that are accessible only to contributors via Actions. 
       In that approach `Secret` is *not* an integral part of the source code, but is also not subject to version-control.
 	- You might consider using `.gitignore` to simply keep `Secret` out of the repository.
 	  But this does *not* meet all the requirements.
-      In particular, you will get a compile-time error if an expected file is missing during the build.
+          In particular, you will get a compile-time error if an expected file is missing during the build.
 
 ### How the 6 requirements are addressed
 
 > 1. the app needs to contain a `Secret`
 
 This demo app contains a pair of text files named `Unsecret.txt` and `Secret.txt`.
-`Unsecret` contains "Hello, World!" and is never encrypted. 
-`Secret.txt` would contain something worth protecting (here it merely contains the string "Hello, secret World!").
+`Unsecret` contains "Hello, World!" and is not encrypted. 
+`Secret.txt` would contain something worth protecting (here it contains the string "Hello, secret World!").
 The app displays "Hello, secret World!" if it can, but otherwise degrades to displaying "Hello, World!". :disappointed:
 
-> 2. the app's code is in a repository that includes an **encrypted** copy of `Secret`.
+> 2. the app's code repository on GitHub includes an **encrypted** copy of `Secret.txt`.
 
 The encryption is handled by `git-crypt`, which is configured via an entry in `.gitattributes` that says
-`Secret.txt filter=git-crypt diff=git-crypt`. This causes Secret.txt to get encrypted before it reaches the remote repo.
+`Secret.txt filter=git-crypt diff=git-crypt`. This causes `Secret.txt` to be encrypted before it reaches the remote repo.
 And it gets automatically decrypted when it is pulled from a remote repo.
 
 > 3. This implies that there is a second secret. Let's call that the `Key`.
 
 `git-crypt`, after initialisation in your project directory, can be asked to export the key via `$ git-crypt export-key <path>`.
 
-If you choose `$ git-crypt export-key ../git-crypt-key`, `Key` can be shared across multiple projects,
-or multiple variants/branches of the project.
-And should still have the key if you delete your local directory and reinstall by cloning from the remote repository.
+If you choose `$ git-crypt export-key ../git-crypt-key`, `Key` can be shared across multiple projects in a parent directory.
+And should still have the key if you delete your local directory and reinstall by cloning from the GitHub repository.
 
 > 4. The `Key` is not shared via the repository.
 
@@ -100,16 +99,16 @@ If `Key` is stored in a parent directory, you might want to list it anyway, just
 > 5. **with** access to the `Key`, the app builds and runs with **full** functionality
 
 This is a matter of detecting that the file `Secret.txt` is not encrypted in your local file system,
-and using this to do whatever your software needs `Secret` for.
-The detection can rely on the fact that a file encrypted by `git-crypt` starts with a fixed 10 byte sequence
+and using this to do whatever your app needs `Secret` for.
+The detection can rely on the fact that a file encrypted by `git-crypt` starts with a fixed 10-byte sequence
 (GITCRYPT with a leading and trailing zero byte).
 The Swift demo app simply detects this by catching if the function call `String(contentsOfFile: filepath)` throws an error.
 
 > 6. **without** access to `Key`, the app builds and runs with **reduced** functionality
 
-The app needs to implement this custom logic. In this case it involves using `Unsecret.txt` instead of `Secret.txt`.
-Again, the fact that `Secret` is encrypted is done here by catching an exception thrown while converting
-the text to a Swift String.
+The app needs to implement this custom logic. In this demo it involves using `Unsecret.txt` instead of `Secret.txt`.
+Again, the fact that `Secret` is encrypted is detected here by catching an exception thrown while converting
+the file content to a Swift String.
 
 ### Running the demo
 
