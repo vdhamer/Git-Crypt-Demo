@@ -8,28 +8,28 @@
 import SwiftUI
 
 struct ContentView: View {
-    private var payload: String = "" // contain the actual Secret or a dummy (unsecret), "" is overwirtten in init()
+    private var payload: String = "" // contain the actual Secret or a dummy (unsecret), "" is overwritten in init()
 
     init(secretFileName: String, unSecretFileName: String) {
         payload = getFileAsString(secretFilename: secretFileName, unsecretFileName: unSecretFileName)
     }
 
     var body: some View {
-
         ZStack {
-            Color(.lightGray)
+            Color(.secondarySystemBackground)
+
             VStack {
                 Image(systemName: "globe")
                     .resizable()
                     .foregroundColor(.blue)
                     .frame(width: 50, height: 50)
                 Text(payload) // in theory this might get localized
-                    .foregroundColor(.black)
+                    .foregroundColor(.primary)
                     .font(.title)
             }
         }
-        .frame(width: 300, height: 300)
-        .border(.white)
+        .frame(width: 300, height: 200)
+        .border(.primary, width: 1)
     }
 
     private func getFileAsString(secretFilename: String, unsecretFileName: String) -> String {
@@ -62,6 +62,7 @@ struct ContentView: View {
     }
 }
 
+/* Preview works, but git-crypt doesn't work with preview. So there is no encryption.
 struct ContentView_Previews: PreviewProvider {
     static let secretFileName = "Unsecret.txt"
     static let unSecretFileName = "Unsecret.txt"
@@ -70,3 +71,4 @@ struct ContentView_Previews: PreviewProvider {
         ContentView(secretFileName: secretFileName, unSecretFileName: unSecretFileName)
     }
 }
+*/
