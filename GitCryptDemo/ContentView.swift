@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    private var payload : String = "" // contain the actual Secret or a dummy (unsecret), "" is overwirtten in init()
+    private var payload: String = "" // contain the actual Secret or a dummy (unsecret), "" is overwirtten in init()
 
     init(secretFileName: String, unSecretFileName: String) {
         payload = getFileAsString(secretFilename: secretFileName, unsecretFileName: unSecretFileName)
