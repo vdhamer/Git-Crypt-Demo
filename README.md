@@ -2,33 +2,34 @@
 
 ## Using `git-crypt` to encrypt files in a public Git repo
 
-This is an example of integrating [`crypt-demo`](https://github.com/AGWA/git-crypt) into an almost empty, but working,
+This is an example of integrating [`crypt-demo`](https://github.com/AGWA/git-crypt) into very basic
 Swift/SwiftUI app under Xcode. 
 The aim is to have a Git software repository that contains a tiny file that needs encrypting.
 Furthermore the project should be immediately buildable/runnable —
-regardless of whether you have the required encryption key.
+regardless of whether the user has access to the required encryption key.
 
 This "graceful degradation" is a feature of `git-crypt`: you can make an app that builds correctly in both states.
-But this graceful degration also requires that the app's code does its part at runtime:
+But this graceful degration also requires that the app's code does its part of the work at runtime:
 if you don't have access to the key, some of the app's functionality needs to be automatically disabled or 
-degraded in an appropriate way. After all, *with* the key, the app runs as intended. 
+degraded in whatever way is appropriate for the app. After all, *with* the key, the app runs as intended. 
 But *without* the key something that it would normally need is simply missing, and the app needs to deal with this.
 
 ### Requirements and assumptions
 
-The target requirements we are aiming for are listed here. We will come back to how each is achieved in a moment.
+The target requirements are listed here. We will come back to how each is achieved in a later section.
 The requirements/assumptions:
-1. The app needs to contain a **`Secret`** (e.g., an API key) that should stay secret. 
+1. The app needs to contain a **`Secret`** (e.g., a file containing an API key) that needs to be protected. 
    Anyone with the source code can create and insert their _own_ `Secret`, 
-   but they cannot access the `Secret` owned by the original code author.
-2. The app's code is archived in a repository that contains an *encrypted* copy of the file with the `Secret`.
-3. This implies that there is *another* secret needed to enable decryption. 
-   To avoid confusion, we will call that second secret the **`Key`**.
+   but they shall not be able to access the `Secret` owned by the original code author.
+2. The app's code is archived in a public repository that contains an *encrypted* copy of the file with the `Secret`.
+3. This implies that there is *another* secret needed so that the app can decrypt the `Secret`. 
+   To avoid confusion, we will call that other, second secret the **`Key`**.
 4. The `Key` is *not* shared in the repository (otherwise we would be heading towards even more secrets). 
-   This `Key` might be reused across a few other projects, or might be shared via a private communication 
-   with collaborators on this app project.
-5. For anyone with access to the `Key`, the app builds and runs as-is, with **full functionality** because access to the `Key` gives access to the `Secret`. 
-6. For anyone without access to the `Key`, the app builds and runs as-is, but with **reduced functionality**. 
+   This `Key` might be project specific or be reused across a few other projects. The `Key` might be shared via a private communication 
+   channel with other project collaborators.
+5. For anyone with access to the `Key`, the app builds and runs as-is, with **full functionality** because access to the `Key` gives access to the `Secret`.
+   This allows the app to be built from the local file system to create a fully functioning app.
+6. But anyone without access to the `Key`, the app builds and runs as-is, but with **reduced functionality**. 
    What "reduced functionality" could looks like is entirely up to the app.
 
 ### Possible use cases
@@ -70,7 +71,7 @@ The requirements/assumptions:
 
 ### How the 6 requirements are addressed
 
-> 1. the app needs to contain a `Secret`
+> 1. the app needs to contain a `Secret` stored in a file within the app bundle.
 
 This demo app contains a pair of text files named `Unsecret.txt` and `Secret.txt`.
 `Unsecret` contains "Hello, World!" and is not encrypted. 
@@ -79,34 +80,38 @@ The app displays "Hello, secret World!" if it can, but otherwise degrades to dis
 
 > 2. the app's code repository on GitHub includes an **encrypted** copy of `Secret.txt`.
 
-The encryption is handled by `git-crypt`, which is configured via an entry in `.gitattributes` that says
-`Secret.txt filter=git-crypt diff=git-crypt`. This causes `Secret.txt` to be encrypted before it reaches the remote repo.
+The encryption is handled by `git-crypt`, which is configured via an entry in `.gitattributes` that reads
+`Secret.txt filter=git-crypt diff=git-crypt`. If git-crypt is present and is can handle the encryption/decryption,
+this causes `Secret.txt` to be encrypted when the file is staged for git.
 And it gets automatically decrypted when it is pulled from a remote repo.
+
+If git-crypt is not present or cannot handle the encryption/decryption, the app bundle will contain an encrypted
+file which the app cannot use. It detects that it is unusable and goes on to some fallback behavior.
 
 > 3. This implies that there is a second secret. Let's call that the `Key`.
 
 `git-crypt`, after initialisation in your project directory, can be asked to export the key via `$ git-crypt export-key <path>`.
 
 If you choose `$ git-crypt export-key ../git-crypt-key`, `Key` can be shared across multiple projects in a parent directory.
-And should still have the key if you delete your local directory and reinstall by cloning from the GitHub repository.
+And you won't lose the key if you delete your project directory and reinstall the app's code from the GitHub repository.
 
 > 4. The `Key` is not shared via the repository.
 
 If your `Key` is stored *in or below* your project directory, you need to prevent uploading to the repository by
 listing it in the Git `.gitignore` file.
-If `Key` is stored in a parent directory, you might want to list it anyway, just in case.
+If `Key` is stored in a parent directory, you might want to list it anyway, for safety.
 
 > 5. **with** access to the `Key`, the app builds and runs with **full** functionality
 
-This is a matter of detecting that the file `Secret.txt` is not encrypted in your local file system,
+This is a matter of detecting that the file `Secret.txt` is not encrypted in your local file system and app bundle,
 and using this to do whatever your app needs `Secret` for.
 The detection can rely on the fact that a file encrypted by `git-crypt` starts with a fixed 10-byte sequence
 (GITCRYPT with a leading and trailing zero byte).
-The Swift demo app simply detects this by catching if the function call `String(contentsOfFile: filepath)` throws an error.
+The Swift demo app detects this simply by catching if the function call `String(contentsOfFile: filepath)` throws an error.
 
 > 6. **without** access to `Key`, the app builds and runs with **reduced** functionality
 
-The app needs to implement this custom logic. In this demo it involves using `Unsecret.txt` instead of `Secret.txt`.
+The app needs to implement this custom logic. In this demo it involves using `Unsecret.txt` when `Secret.txt` is unusable.
 Again, the fact that `Secret` is encrypted is detected here by catching an exception thrown while converting
 the file content to a Swift String.
 
