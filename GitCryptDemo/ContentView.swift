@@ -17,16 +17,11 @@ struct ContentView: View {
     var body: some View {
         ZStack {
             Color(.secondarySystemBackground)
-
-            VStack {
-                Image(systemName: "globe")
-                    .resizable()
-                    .foregroundColor(.blue)
-                    .frame(width: 50, height: 50)
                 Text(payload) // in theory this might get localized
+                    .multilineTextAlignment(.center)
+                    .lineLimit(4)
                     .foregroundColor(.primary)
                     .font(.title)
-            }
         }
         .frame(width: 300, height: 200)
         .border(.primary, width: 1)
