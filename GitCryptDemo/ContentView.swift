@@ -62,13 +62,11 @@ struct ContentView: View {
     }
 }
 
-/* Preview works, but git-crypt doesn't work with preview. So there is no encryption.
 struct ContentView_Previews: PreviewProvider {
-    static let secretFileName = "Unsecret.txt"
+    static let secretFileName = "Secret.txt"
     static let unSecretFileName = "Unsecret.txt"
 
     static var previews: some View {
         ContentView(secretFileName: secretFileName, unSecretFileName: unSecretFileName)
     }
 }
-*/
