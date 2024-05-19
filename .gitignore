@@ -1,6 +1,7 @@
 # git-crypt
-.git/git-crypt/keys/**
-../git-crypt-key
+# normally following 2 lines are commented out. Just a way to give you the actual Key.
+#.git/git-crypt/keys/**
+#../git-crypt-key
 
 # Xcode
 UserInterfaceState.xcuserstate
