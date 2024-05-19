@@ -336,18 +336,18 @@ but this will fix the problem for one individual project.
 	Only GitCryptDemo itself may show an M (for **M**odified) in the Project
 	Navigator. If you really want to know what that is,
 	`git status` may show a file like `GitCryptDemo.xcodeproj/project.pbxproj` which
-	is again internal book keeping used by Xcode. 
+	is again internal bookkeeping used by Xcode. 
 	We could ignore it ([here](https://thoughtbot.com/blog/xcode-and-git-bridging-the-gap) is an alternative).
 
 	At this point you might actually want to build and run the default app. 
 	On a Mac it will show a very small, easy to overlook window.
 	But you can also run the code on an iOS device where it is shown full screen.
 
-	It displays "Contents of file Unsecret.txt" with a lower-case "w".
+	It displays "Contents of file Unsecret.txt" with a lower-case "w". ????
 	That text is neither of the 2 text files, because we are not using them yet.
 
 	At this point, we have actually encrypted something (going by `git-crypt status` and
-    the fact that we have done a commit. But it is not really convincing yet.
+        the fact that we have done a commit. But it is not really convincing yet.
 
 15.	**Pushing the commit to GitHub**
 
