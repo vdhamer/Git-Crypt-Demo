@@ -74,9 +74,9 @@ The requirements/assumptions:
 > 1. the app needs to contain a `Secret` stored in a file within the app bundle.
 
 This demo app contains a pair of text files named `Unsecret.txt` and `Secret.txt`.
-`Unsecret` contains "Hello, World!" and is not encrypted. 
-`Secret.txt` would contain something worth protecting (here it contains the string "Hello, secret World!").
-The app displays "Hello, secret World!" if it can, but otherwise degrades to displaying "Hello, World!". :disappointed:
+`Unsecret.txt` contains "Contents of file Unsecret.txt" and is not encrypted. 
+`Secret.txt` would contain something worth protecting (here it contains the string "Contents of file Secret.txt").
+The app displays "Contents of file Secret.txt" if it can, but otherwise degrades to displaying "Contents of file Unsecret.txt". :disappointed:
 
 > 2. the app's code repository on GitHub includes an **encrypted** copy of `Secret.txt`.
 
@@ -292,7 +292,7 @@ but this will fix the problem for one individual project.
 
 	In your repository's root directory, create `Unsecret.txt` using
 	`cat >Unsecret.txt`, followed by
-	`Hello, World!` and closed by
+	`Contents of file Unsecret.txt` and closed by
 	Control-C.
 	This text will not be encrypted.
 
@@ -343,7 +343,7 @@ but this will fix the problem for one individual project.
 	On a Mac it will show a very small, easy to overlook window.
 	But you can also run the code on an iOS device where it is shown full screen.
 
-	It displays "Hello, world!" with a lower-case "w".
+	It displays "Contents of file Unsecret.txt" with a lower-case "w".
 	That text is neither of the 2 text files, because we are not using them yet.
 
 	At this point, we have actually encrypted something (going by `git-crypt status` and
@@ -371,7 +371,7 @@ but this will fix the problem for one individual project.
 
 	So within the app you should see "Temp secret" displayed,
 	because that is how we left the concent of `Secret.txt` in Step (11).
-	Now you can edit it to say "Hello, secret World!", and commit the change and push it to GitHub.
+	Now you can edit it to say "Contents of file Secret.txt", and commit the change and push it to GitHub.
 	You can do this entirely from the `Source Control` menu in Xcode: the encryption is handled automatically.
 	Essentially Xcode controls git which in turn controls `git-crypt`.
 
@@ -384,7 +384,7 @@ but this will fix the problem for one individual project.
 	and click on `Code` and `Open with Xcode`.
 
 	Then confirm that the file `Secret.txt` is encrypted there by viewing it.
-	You should also see that an app built from this repository now displays "Hello, World!" with a capital W
+	You should also see that an app built from this repository now displays "Contents of file Secret.txt"
 	(as in the file `Unsecret.txt`). Which confirms that the app decided that file was encrypted.
 
 ### Thoughs on "should it really be this complex?"
